@@ -1,0 +1,79 @@
+{
+  "success": true,
+  "rooms": [
+    {
+      "Photo": "https://example.com/images/room1.jpg",
+      "RoomNumber": "101",
+      "RoomID": "R001",
+      "BedType": "Suite",
+      "Facilities": [
+        "Wi-Fi",
+        "TV",
+        "Air Conditioning",
+        "Mini Bar",
+        "test"
+      ],
+      "Rate": 13000,
+      "discount": 20,
+      "bookingDiscount": 10,
+      "Status": "Available",
+      "CheckIn": "2023-08-02",
+      "CheckOut": "2023-08-06",
+      "id": "283c"
+    },
+    {
+      "Photo": "https://example.com/images/room2.jpg",
+      "RoomNumber": "102",
+      "RoomID": "R002",
+      "BedType": "Double Bed",
+      "Facilities": [
+        "Wi-Fi",
+        "TV",
+        "Mini Bar"
+      ],
+      "Rate": 100,
+      "discount": 18,
+      "bookingDiscount": 10,
+      "Status": "Booked",
+      "OrderDate": "2023-07-10",
+      "CheckIn": "2023-08-01",
+      "CheckOut": "2023-08-07",
+      "id": "2fd4"
+    },
+    {
+      "Photo": "https://example.com/images/room2.jpg",
+      "RoomNumber": "103",
+      "RoomID": "R003",
+      "BedType": "Single Bed",
+      "Facilities": [
+        "Wi-Fi",
+        "TV",
+        "Mini Bar"
+      ],
+      "Rate": 15000,
+      "discount": 18,
+      "bookingDiscount": 10,
+      "Status": "Booked",
+      "OrderDate": "2023-07-18",
+      "CheckIn": "2023-08-03",
+      "CheckOut": "2023-08-08",
+      "id": "2fd6"
+    },
+    {
+      "Photo": "https://example.com/images/room1.jpg",
+      "RoomNumber": "104",
+      "RoomID": "R004",
+      "BedType": "Simple Room",
+      "Facilities": [
+        "Wi-Fi"
+      ],
+      "Rate": 5000,
+      "discount": 20,
+      "bookingDiscount": 10,
+      "Status": "Available",
+      "CheckIn": "2023-08-02",
+      "CheckOut": "2023-08-06",
+      "id": "264c"
+    }
+  ]
+}
