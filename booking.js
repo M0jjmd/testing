@@ -1,6 +1,6 @@
 const roomsData = require('./ApiData.json')
 
-function calculateFinalPrice(roomId) {
+const calculateFinalPrice = (roomId) => {
     const room = roomsData.rooms.find(room => room.RoomID === roomId)
     const roomRate = room.Rate
     const roomDiscount = room.discount

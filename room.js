@@ -1,5 +1,46 @@
 const roomsData = require('./ApiData.json')
 
+class RoomUtils {
+    static totalOccupancyPercentage() {
+        const rooms = roomsData.rooms
+        const totalRooms = rooms.length
+        const occupiedRooms = rooms.filter(room => room.Status === "Booked").length
+
+        return totalRooms === 0 ? 0 : (occupiedRooms / totalRooms) * 100
+    }
+
+    static occupancyPercentage = (startDate, endDate) => {
+        const start = new Date(startDate)
+        const end = new Date(endDate)
+        let totalDays = 0
+        let occupiedDays = 0
+
+        while (start <= end) {
+            totalDays++
+            if (isOccupied(start)) {
+                occupiedDays++
+            }
+            start.setDate(start.getDate() + 1)
+        }
+
+        if (totalDays === 0) return 0
+
+        return (occupiedDays / totalDays) * 100
+    }
+
+    static availableRooms(startDate, endDate) {
+        const start = new Date(startDate)
+        const end = new Date(endDate)
+
+        return roomsData.rooms.filter(room => {
+            const roomStartDate = new Date(room.CheckIn)
+            const roomEndDate = new Date(room.CheckOut)
+
+            return room.Status !== "Booked" || (roomEndDate < start || roomStartDate > end)
+        })
+    }
+}
+
 const validateJsonStructure = () => {
     if (!roomsData || typeof roomsData !== 'object') {
         throw new Error("El JSON no tiene una estructura válida.")
@@ -88,46 +129,6 @@ const isOccupied = (date) => {
     })
 }
 
-const occupancyPercentage = (startDate, endDate) => {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    let totalDays = 0
-    let occupiedDays = 0
-
-    while (start <= end) {
-        totalDays++
-        if (isOccupied(start)) {
-            occupiedDays++
-        }
-        start.setDate(start.getDate() + 1)
-    }
-
-    if (totalDays === 0) return 0
-
-    return (occupiedDays / totalDays) * 100
-}
-
-const totalOccupancyPercentage = () => {
-    const rooms = roomsData.rooms
-
-    const totalRooms = rooms.length
-    const occupiedRooms = rooms.filter(room => room.Status === "Booked").length
-
-    return totalRooms === 0 ? 0 : (occupiedRooms / totalRooms) * 100
-}
-
-const availableRooms = (startDate, endDate) => {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-
-    return roomsData.rooms.filter(room => {
-        const roomStartDate = new Date(room.CheckIn)
-        const roomEndDate = new Date(room.CheckOut)
-
-        return room.Status !== "Booked" || (roomEndDate < start || roomStartDate > end)
-    })
-}
-
 module.exports = {
     getAllRooms,
     getRoomById,
@@ -140,7 +141,5 @@ module.exports = {
     validateRoomFacilities,
     validateRoomPhotos,
     isOccupied,
-    occupancyPercentage,
-    totalOccupancyPercentage,
-    availableRooms,
+    RoomUtils
 }

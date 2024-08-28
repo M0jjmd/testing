@@ -1,4 +1,5 @@
 const rooms = require('./room')
+const { RoomUtils } = require('./room')
 const bookings = require('./booking')
 
 describe("Validaciones del JSON y las habitaciones", () => {
@@ -64,12 +65,12 @@ describe("Tests de funciones del archivo rooms.js", () => {
     })
 
     test("occupancyPercentage devuelve el porcentaje correcto de días ocupados en el rango de fechas dado", () => {
-        expect(rooms.occupancyPercentage("2023-08-01", "2023-08-07")).toBeGreaterThan(0)
-        expect(rooms.occupancyPercentage("2023-07-01", "2023-07-15")).toBe(0)
+        expect(RoomUtils.occupancyPercentage("2023-08-01", "2023-08-07")).toBeGreaterThan(0)
+        expect(RoomUtils.occupancyPercentage("2023-07-01", "2023-07-15")).toBe(0)
     })
 
     test("totalOccupancyPercentage calcula el porcentaje total de habitaciones ocupadas", () => {
-        const percentage = rooms.totalOccupancyPercentage()
+        const percentage = RoomUtils.totalOccupancyPercentage()
 
         const expectedPercentage = (2 / 4) * 100
 
@@ -78,16 +79,16 @@ describe("Tests de funciones del archivo rooms.js", () => {
 })
 
 describe("Tests de funciones del archivo bookings.js", () => {
-    test("calculateFinalPrice el precio debe ser un numero positivo, descuento entre 0 y 100, descuento de la reserva entre 0 y 100"), () => {
+    test("calculateFinalPrice el precio debe ser un numero positivo, descuento entre 0 y 100, descuento de la reserva entre 0 y 100", () => {
         expect(() => bookings.calculateFinalPrice("R001")).not.toThrow()
-    }
+    })
 
-    test("calculateFinalPrice calcula el desciento final de la habitacion y el booking"), () => {
+    test("calculateFinalPrice calcula el descuento final de la habitacion y el booking", () => {
         const finalFee = bookings.calculateFinalPrice("R001")
 
         const discountedRoomRate = 13000 - (13000 * 20 / 100)
         const finalFeeInCents = discountedRoomRate - (discountedRoomRate * 10 / 100)
         const finalFeeInEuros = finalFeeInCents / 100
         expect(finalFee).toBeCloseTo(finalFeeInEuros)
-    }
+    })
 })
