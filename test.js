@@ -1,9 +1,8 @@
-const rooms = require('./room')
-const { RoomUtils } = require('./room')
+const Room = require('./room')
 const bookings = require('./booking')
 
 describe("Validaciones del JSON y las habitaciones", () => {
-
+    const rooms = new Room()
     test("Validamos la estructura básica del JSON", () => {
         expect(() => rooms.validateJsonStructure()).not.toThrow()
     })
@@ -36,6 +35,7 @@ describe("Validaciones del JSON y las habitaciones", () => {
 })
 
 describe("Tests de funciones del archivo rooms.js", () => {
+    const rooms = new Room()
 
     test("getAllRooms devuelve todas las habitaciones", () => {
         const allRooms = rooms.getAllRooms()
@@ -47,7 +47,7 @@ describe("Tests de funciones del archivo rooms.js", () => {
         expect(room).toHaveProperty('RoomNumber', '101')
     })
 
-    test("isRoomBooked devuelve true si la habitación está ocupada", () => {
+    test("isRoomBooked devuelve true si la habitación está ocupada y false en caso contrario", () => {
         const isBooked = rooms.isRoomBooked('2fd4')
         const isNotBooked = rooms.isRoomBooked('283c')
         expect(isBooked).toBe(true)
@@ -60,17 +60,17 @@ describe("Tests de funciones del archivo rooms.js", () => {
     })
 
     test("isOccupied devuelve true si hay habitaciones ocupadas en la fecha dada", () => {
-        expect(rooms.isOccupied(new Date("2023-08-03"))).toBe(true)
-        expect(rooms.isOccupied(new Date("2023-07-01"))).toBe(false)
+        expect(Room.isOccupied(new Date("2023-08-03"))).toBe(true)
+        expect(Room.isOccupied(new Date("2023-07-01"))).toBe(false)
     })
 
     test("occupancyPercentage devuelve el porcentaje correcto de días ocupados en el rango de fechas dado", () => {
-        expect(RoomUtils.occupancyPercentage("2023-08-01", "2023-08-07")).toBeGreaterThan(0)
-        expect(RoomUtils.occupancyPercentage("2023-07-01", "2023-07-15")).toBe(0)
+        expect(Room.occupancyPercentage("2023-08-01", "2023-08-07")).toBeGreaterThan(0)
+        expect(Room.occupancyPercentage("2023-07-01", "2023-07-15")).toBe(0)
     })
 
     test("totalOccupancyPercentage calcula el porcentaje total de habitaciones ocupadas", () => {
-        const percentage = RoomUtils.totalOccupancyPercentage()
+        const percentage = Room.totalOccupancyPercentage()
 
         const expectedPercentage = (2 / 4) * 100
 
@@ -79,12 +79,17 @@ describe("Tests de funciones del archivo rooms.js", () => {
 })
 
 describe("Tests de funciones del archivo bookings.js", () => {
-    test("calculateFinalPrice el precio debe ser un numero positivo, descuento entre 0 y 100, descuento de la reserva entre 0 y 100", () => {
-        expect(() => bookings.calculateFinalPrice("R001")).not.toThrow()
+    const Bookings = new bookings()
+    test("priceValidation el precio debe ser un numero positivo", () => {
+        expect(() => Bookings.calculateFinalPrice("R001")).not.toThrow()
+    })
+
+    test("discountValidations descuento entre 0 y 100, descuento de la reserva entre 0 y 100", () => {
+        expect(() => Bookings.calculateFinalPrice("R001")).not.toThrow()
     })
 
     test("calculateFinalPrice calcula el descuento final de la habitacion y el booking", () => {
-        const finalFee = bookings.calculateFinalPrice("R001")
+        const finalFee = Bookings.calculateFinalPrice("R001")
 
         const discountedRoomRate = 13000 - (13000 * 20 / 100)
         const finalFeeInCents = discountedRoomRate - (discountedRoomRate * 10 / 100)
