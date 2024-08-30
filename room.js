@@ -1,120 +1,128 @@
-const roomsData = require('./ApiData.json')
-
 class room {
-    validateJsonStructure() {
-        if (!roomsData || typeof roomsData !== 'object') {
-            throw new Error("El JSON no tiene una estructura válida.")
-        }
-        if (!roomsData.hasOwnProperty('success')) {
-            throw new Error("Falta la propiedad 'success' en el JSON.")
-        }
-        if (!Array.isArray(roomsData.rooms)) {
-            throw new Error("La propiedad 'rooms' debe ser un array.")
-        }
+    constructor(rooms, bookings) {
+        this.rooms = rooms
+        this.bookings = bookings
     }
 
     validateRoomProperties(room) {
-        const requiredProperties = [
-            'RoomNumber', 'Status', 'CheckIn', 'CheckOut', 'Rate', 'Facilities', 'id'
-        ]
+        const requiredProperties = ['name', 'rate', 'discount']
 
         requiredProperties.forEach(requiredProp => {
             if (!room.hasOwnProperty(requiredProp)) {
-                throw new Error(`La habitación ${room.id} no tiene la propiedad ${requiredProp}`)
+                throw new Error(`La habitación ${room.name} no tiene la propiedad ${requiredProp}`)
             }
         })
     }
 
     hasBookedRooms() {
-        return roomsData.rooms.some(room => room.Status === "Booked")
+        return this.bookings.length > 0
+    }
+
+    isOccupied(date) {
+        return this.bookings.some(booking => {
+            const checkInDate = new Date(booking.checkin)
+            const checkOutDate = new Date(booking.checkout)
+
+            checkInDate.setHours(0, 0, 0, 0)
+            checkOutDate.setHours(0, 0, 0, 0)
+            date.setHours(0, 0, 0, 0)
+
+            const isOccupied = checkInDate <= date && date <= checkOutDate
+
+            return isOccupied
+        })
     }
 
     validateRoomRates() {
-        roomsData.rooms.forEach(room => {
-            if (typeof room.Rate !== 'number' || !Number.isInteger(room.Rate)) {
-                throw new Error(`La habitación ${room.id} tiene una tarifa no válida: ${room.Rate}. Debe ser un número entero.`)
+        this.rooms.forEach(room => {
+            if (typeof room.rate !== 'number' || !Number.isInteger(room.rate)) {
+                throw new Error(`La habitación ${room.name} tiene una tarifa no válida: ${room.rate}. Debe ser un número entero.`)
             }
             if (typeof room.discount !== 'number' || !Number.isInteger(room.discount)) {
-                throw new Error(`La habitación ${room.id} tiene un descuento no válido: ${room.discount}. Debe ser un número entero.`)
+                throw new Error(`La habitación ${room.name} tiene un descuento no válido: ${room.discount}. Debe ser un número entero.`)
             }
         })
     }
 
-    validateRoomFacilities(room) {
-        const expectedFacilities = ['Wi-Fi', 'TV', 'Mini Bar', 'Air Conditioning', "Balcony"]
-
-        const hasExpectedFacility = expectedFacilities.some(facility => room.Facilities.includes(facility))
-
-        if (!hasExpectedFacility) {
-            throw new Error(`La habitación ${room.id} no tiene ninguna de las instalaciones esperadas.`)
-        }
-    }
-
-    validateRoomPhotos() {
-        roomsData.rooms.forEach(room => {
-            if (!/^https:\/\/example\.com\/images\/.+\.jpg$/.test(room.Photo)) {
-                throw new Error(`La habitación ${room.id} tiene una URL de foto no válida.`)
-            }
-        })
-    }
-
-    getAllRooms() {
-        return roomsData.rooms
-    }
-
-    getRoomById(id) {
-        return roomsData.rooms.find(room => room.id === id)
-    }
-
-    isRoomBooked(id) {
-        const room = this.getRoomById(id)
-        console.log(room)
-        if (room.Status === "Booked") {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    getRoomCheckInDate(id) {
-        const room = this.getRoomById(id)
-        return room ? room.CheckIn : null
-    }
-
-    static isOccupied(date) {
-        return roomsData.rooms.some(room => {
-            if (room.Status !== "Booked") return false
-            const checkInDate = new Date(room.CheckIn)
-            const checkOutDate = new Date(room.CheckOut)
-            return checkInDate <= date && date <= checkOutDate
-        })
-    }
-
-    static totalOccupancyPercentage() {
-        const rooms = roomsData.rooms
-        const totalRooms = rooms.length
-        const occupiedRooms = rooms.filter(room => room.Status === "Booked").length
-
-        return totalRooms === 0 ? 0 : (occupiedRooms / totalRooms) * 100
-    }
-
-    static occupancyPercentage(startDate, endDate) {
+    occupancyPercentage(startDate, endDate) {
         const start = new Date(startDate)
         const end = new Date(endDate)
         let totalDays = 0
         let occupiedDays = 0
 
         for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+            const currentDate = new Date(date)
+
+            currentDate.setHours(0, 0, 0, 0)
+
             totalDays++
-            if (this.isOccupied(new Date(date))) {
+
+            if (this.isOccupied(currentDate)) {
                 occupiedDays++
             }
-            start.setDate(start.getDate() + 1)
+        }
+        return totalDays === 0 ? 0 : (occupiedDays / totalDays) * 100
+    }
+
+    static totalOccupancyPercentage(rooms, bookings, startDate, endDate) {
+        const start = new Date(startDate)
+        const end = new Date(endDate)
+        const totalDays = (end - start) / (1000 * 60 * 60 * 24) + 1
+
+        if (totalDays <= 0) {
+            return 0
         }
 
-        if (totalDays === 0) return 0
+        rooms.forEach(room => {
+            room.bookings = []
+        })
 
-        return totalDays === 0 ? 0 : (occupiedDays / totalDays) * 100
+        bookings.forEach(booking => {
+            const room = rooms.find(room => room.name === booking.name.replace('Booking', 'Room'))
+            if (room) {
+                room.bookings.push(booking)
+            }
+        })
+
+        let totalOccupiedDays = 0
+        const totalRoomDays = rooms.length * totalDays
+
+        rooms.forEach(room => {
+            if (room.bookings) {
+                room.bookings.forEach(booking => {
+                    const bookingStart = booking.checkin > start ? booking.checkin : start
+                    const bookingEnd = booking.checkout < end ? booking.checkout : end
+
+                    if (bookingStart <= bookingEnd) {
+                        const occupiedDays = (bookingEnd - bookingStart) / (1000 * 60 * 60 * 24) + 1
+                        totalOccupiedDays += occupiedDays
+                    }
+                })
+            }
+        })
+
+        const occupancyPercentage = (totalOccupiedDays / totalRoomDays) * 100
+        return occupancyPercentage
+    }
+
+    static availableRooms(rooms, bookings, startDateStr, endDateStr) {
+        const startDate = new Date(startDateStr)
+        const endDate = new Date(endDateStr)
+
+        return rooms.filter(room => {
+            const roomBookings = bookings.filter(booking => booking.roomName === room.name)
+
+            const isAvailable = !roomBookings.some(booking => {
+                const bookingStart = new Date(booking.checkin)
+                const bookingEnd = new Date(booking.checkout)
+
+                const overlaps = bookingStart < endDate && bookingEnd > startDate
+
+                return overlaps
+            })
+
+            return isAvailable
+        })
     }
 }
 
