@@ -1,24 +1,18 @@
+import { Room, Booking } from './types'
+
 class room {
-    constructor(rooms, bookings) {
+    rooms: Room[]
+    bookings: Booking[]
+    constructor(rooms: Room[], bookings: Booking[]) {
         this.rooms = rooms
         this.bookings = bookings
-    }
-
-    validateRoomProperties(room) {
-        const requiredProperties = ['name', 'rate', 'discount']
-
-        requiredProperties.forEach(requiredProp => {
-            if (!room.hasOwnProperty(requiredProp)) {
-                throw new Error(`La habitación ${room.name} no tiene la propiedad ${requiredProp}`)
-            }
-        })
     }
 
     hasBookedRooms() {
         return this.bookings.length > 0
     }
 
-    isOccupied(date) {
+    isOccupied(date: Date): boolean {
         return this.bookings.some(booking => {
             const checkInDate = new Date(booking.checkin)
             const checkOutDate = new Date(booking.checkout)
@@ -33,7 +27,7 @@ class room {
         })
     }
 
-    validateRoomRates() {
+    validateRoomRates(): void {
         this.rooms.forEach(room => {
             if (typeof room.rate !== 'number' || !Number.isInteger(room.rate)) {
                 throw new Error(`La habitación ${room.name} tiene una tarifa no válida: ${room.rate}. Debe ser un número entero.`)
@@ -44,7 +38,7 @@ class room {
         })
     }
 
-    occupancyPercentage(startDate, endDate) {
+    occupancyPercentage(startDate: Date, endDate: Date) {
         const start = new Date(startDate)
         const end = new Date(endDate)
         let totalDays = 0
@@ -64,23 +58,23 @@ class room {
         return totalDays === 0 ? 0 : (occupiedDays / totalDays) * 100
     }
 
-    static totalOccupancyPercentage(rooms, bookings, startDate, endDate) {
+    static totalOccupancyPercentage(rooms: Room[], bookings: Booking[], startDate: Date, endDate: Date) {
         const start = new Date(startDate)
         const end = new Date(endDate)
-        const totalDays = (end - start) / (1000 * 60 * 60 * 24) + 1
+        const totalDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24) + 1
 
         if (totalDays <= 0) {
             return 0
         }
 
         rooms.forEach(room => {
-            room.bookings = []
+            (room as any).bookings = []
         })
 
         bookings.forEach(booking => {
             const room = rooms.find(room => room.name === booking.name.replace('Booking', 'Room'))
             if (room) {
-                room.bookings.push(booking)
+                (room as any).bookings.push(booking)
             }
         })
 
@@ -88,24 +82,26 @@ class room {
         const totalRoomDays = rooms.length * totalDays
 
         rooms.forEach(room => {
-            if (room.bookings) {
-                room.bookings.forEach(booking => {
+            const roomBookings = (room as any).bookings as Booking[]
+
+            if (roomBookings) {
+                roomBookings.forEach(booking => {
                     const bookingStart = booking.checkin > start ? booking.checkin : start
                     const bookingEnd = booking.checkout < end ? booking.checkout : end
 
                     if (bookingStart <= bookingEnd) {
-                        const occupiedDays = (bookingEnd - bookingStart) / (1000 * 60 * 60 * 24) + 1
+                        const occupiedDays = (bookingEnd.getTime() - bookingStart.getTime()) / (1000 * 60 * 60 * 24) + 1
                         totalOccupiedDays += occupiedDays
                     }
                 })
             }
         })
 
-        const occupancyPercentage = (totalOccupiedDays / totalRoomDays) * 100
-        return occupancyPercentage
+        // const occupancyPercentage = (totalOccupiedDays / totalRoomDays) * 100
+        return (totalOccupiedDays / totalRoomDays) * 100
     }
 
-    static availableRooms(rooms, bookings, startDateStr, endDateStr) {
+    static availableRooms(rooms: Room[], bookings: Booking[], startDateStr: Date, endDateStr: Date) {
         const startDate = new Date(startDateStr)
         const endDate = new Date(endDateStr)
 

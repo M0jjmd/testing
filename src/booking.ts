@@ -1,10 +1,15 @@
+import { Room, Booking } from './types';
+
 class booking {
-    constructor(rooms, bookings) {
+    rooms: Room[]
+    bookings: Booking[]
+
+    constructor(rooms: Room[], bookings: Booking[]) {
         this.rooms = rooms
         this.bookings = bookings
     }
 
-    priceValidation(roomName) {
+    priceValidation(roomName: String): void {
         const room = this.rooms.find(room => room.name === roomName)
         if (!room) {
             throw new Error('La habitación no existe.')
@@ -15,7 +20,7 @@ class booking {
         }
     }
 
-    discountValidations(roomName) {
+    discountValidations(roomName: String): void {
         const room = this.rooms.find(room => room.name === roomName)
         if (!room) {
             throw new Error('La habitación no existe.')
@@ -27,7 +32,7 @@ class booking {
         }
     }
 
-    calculateFinalPrice(roomName) {
+    calculateFinalPrice(roomName: string): number {
         const room = this.rooms.find(room => room.name === roomName)
         if (!room) {
             throw new Error('La habitación no existe.')

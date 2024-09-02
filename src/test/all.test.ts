@@ -1,5 +1,5 @@
-const booking = require('./booking')
-const Room = require('./room')
+const booking = require('../booking')
+const Room = require('../room')
 
 const room1 = { name: 'Room One', rate: 15000, discount: 10 }
 const room2 = { name: 'Room Two', rate: 13000, discount: 50 }
@@ -10,18 +10,6 @@ const booking2 = { name: 'Booking Two', email: 'booking2@booking.com', checkin: 
 const booking3 = { name: 'Booking Three', email: 'booking3@booking.com', checkin: new Date('2024-08-10'), checkout: new Date('2024-09-05') }
 
 describe('Room Class', () => {
-    test('validateRoomProperties throws error if a room is missing required properties', () => {
-        const rooms = [{ name: 'Room One', rate: 15000 }]
-        const bookings = []
-        const roomInstance = new Room(rooms, bookings)
-
-        expect(() => roomInstance.validateRoomProperties(rooms[0])).toThrow('La habitación Room One no tiene la propiedad discount')
-    })
-
-    test('validateRoomProperties does not throw error if all required properties are present', () => {
-        const roomInstance = new Room([room1], [])
-        expect(() => roomInstance.validateRoomProperties(room1)).not.toThrow()
-    })
 
     test('validateRoomRates throws error if room rate or discount is not a valid integer', () => {
         const room2InvalidRate = { name: 'Room Two', rate: 'test', discount: 50 }
@@ -66,12 +54,12 @@ describe('Room Class', () => {
     test('occupancyPercentage returns correct occupancy percentage for the given date range', () => {
         const room = new Room([room1, room2, room3], [booking1, booking2, booking3])
 
-        const startDate = '2024-08-01'
-        const endDate = '2024-08-31'
+        const startDate = new Date('2024-08-01')
+        const endDate = new Date('2024-08-31')
 
         const percentage = room.occupancyPercentage(startDate, endDate)
 
-        const totalDays = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 1
+        const totalDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24) + 1
         const occupiedDays = [...Array.from({ length: totalDays }, (_, i) => new Date(startDate).setDate(new Date(startDate).getDate() + i))]
             .filter(date => room.isOccupied(new Date(date))).length
 
@@ -135,8 +123,8 @@ describe('Room Class', () => {
 
 const bookingInstance = new booking([room1, room2, room3], [booking1, booking2, booking3])
 
-describe("Tests de funciones del archivo bookings.js", () => {
-    test("priceValidation el precio debe ser un número positivo", () => {
+describe("'Booking Class'", () => {
+    test("priceValidation the price should be a positive number", () => {
         expect(() => bookingInstance.priceValidation('Room One')).not.toThrow()
 
         room1.rate = -15000
@@ -144,7 +132,7 @@ describe("Tests de funciones del archivo bookings.js", () => {
         room1.rate = 15000
     })
 
-    test("discountValidations descuento entre 0 y 100", () => {
+    test("discountValidations discount should be between 0 and 100", () => {
         expect(() => bookingInstance.discountValidations('Room One')).not.toThrow()
 
         room1.discount = -10
@@ -156,7 +144,7 @@ describe("Tests de funciones del archivo bookings.js", () => {
         room1.discount = 10
     })
 
-    test("calculateFinalPrice calcula el descuento final de la habitación", () => {
+    test("calculateFinalPrice calculate the discounted final price", () => {
         const finalFee = bookingInstance.calculateFinalPrice('Room Two')
 
         const room = room2
